@@ -1,0 +1,15 @@
+######### Measure_1 ##############
+
+pump 50
+pump 1
+wait 2000
+pump 0
+LED1 1
+wait 1000
+capture True 405nm
+LED1 0
+wait 1000
+LED2 1
+wait 1000
+capture True 600nm
+LED2 0
