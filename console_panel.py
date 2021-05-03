@@ -9,7 +9,7 @@ class hpConsole:
         self.T = tki.Text(topFrame)
 
         S.pack(side=tki.RIGHT, fill=tki.Y)
-        self.T.pack(side=tki.LEFT, fill = tki.BOTH)
+        self.T.pack(fill = tki.BOTH)
 
         S.config(command=self.T.yview)
         self.T.config(yscrollcommand=S.set)

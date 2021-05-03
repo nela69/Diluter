@@ -69,8 +69,8 @@ class Heater:
     def Off(self):
         GPIO.output(self.GPIO_control, GPIO.LOW)
         
-class UniStepper:
-# 28BYJ-48 5V Stepper Motor (unipolar) driver
+class Stepper:
+# 28BYJ-48 5V Stepper Motor (unipolar) and 5V bipolar driver
 # PWMA, PWMB, STBY must be set to HIGH on TB6612!!!  
     def __init__(self, AIN1, AIN2, BIN1, BIN2):
         GPIO.setmode(GPIO.BCM)
@@ -91,40 +91,91 @@ class UniStepper:
         GPIO.output(BIN1,GPIO.LOW)
         GPIO.output(BIN2,GPIO.LOW)
 
-    def runStepper(self, spd, angle):
-        
-        O = self.AIN1
-        P = self.AIN2
-        B = self.BIN1
-        Y = self.BIN2
-        
-        hc = (1/spd)/2
-
-        steps = int(abs(angle)/(360/128))
-        
-        if angle < 0:
-            B = self.AIN1
-            Y = self.AIN2
-            O = self.BIN1
-            P = self.BIN2
+    def runStepper(self, spd, angle, steppertype = 'unipolar'):
+    
+        if steppertype == 'unipolar':
+            O = self.AIN1
+            P = self.AIN2
+            B = self.BIN1
+            Y = self.BIN2
             
-        GPIO.output(O,1)
-        sleep(hc)
+            hc = (1/spd)/2
 
-        for i in range(steps):
-            GPIO.output(Y,1)
-            sleep(hc)
-            GPIO.output(O,0)
-            sleep(hc)  
-            GPIO.output(P,1)
-            sleep(hc)
-            GPIO.output(Y,0)
-            sleep(hc)
-            GPIO.output(B,1)
-            sleep(hc)
-            GPIO.output(P,0)
-            sleep(hc)
+            steps = int(abs(angle)/(360/128))
+            
+            if angle < 0:
+                B = self.AIN1
+                Y = self.AIN2
+                O = self.BIN1
+                P = self.BIN2
+                
             GPIO.output(O,1)
             sleep(hc)
-            GPIO.output(B,0)
-            sleep(hc)
+
+            for i in range(steps):
+                GPIO.output(Y,1)
+                sleep(hc)
+                GPIO.output(O,0)
+                sleep(hc)  
+                GPIO.output(P,1)
+                sleep(hc)
+                GPIO.output(Y,0)
+                sleep(hc)
+                GPIO.output(B,1)
+                sleep(hc)
+                GPIO.output(P,0)
+                sleep(hc)
+                GPIO.output(O,1)
+                sleep(hc)
+                GPIO.output(B,0)
+                sleep(hc)
+ 
+            GPIO.output(self.AIN1,GPIO.LOW)
+            GPIO.output(self.AIN2,GPIO.LOW)
+            GPIO.output(self.BIN1,GPIO.LOW)
+            GPIO.output(self.BIN2,GPIO.LOW)
+        
+        elif steppertype == 'bipolar':
+        #    GPIO.output(STBY, GPIO.HIGH)
+
+            steps = int(abs(angle)/(360/50))
+            spd = spd * 2
+
+            Ap = self.AIN1
+            Am = self.AIN2
+            Bp = self.BIN1
+            Bm = self.BIN2
+            
+            if angle <  1:
+                Ap = self.BIN1
+                Am = self.BIN2
+                Bp = self.AIN1
+                Bm = self.AIN2
+
+            for i in range(steps):
+                GPIO.output(Ap,1)
+                GPIO.output(Am,0) 
+                sleep(1/spd)
+                GPIO.output(Bp,0)
+                GPIO.output(Bm,0)
+                GPIO.output(Bp,1)
+                GPIO.output(Bm,0)
+                sleep(1/spd)
+                GPIO.output(Ap,0)
+                GPIO.output(Am,0)
+                GPIO.output(Ap,0)
+                GPIO.output(Am,1)
+                sleep(1/spd)
+                GPIO.output(Bp,0)
+                GPIO.output(Bm,0)
+                GPIO.output(Bp,0)
+                GPIO.output(Bm,1)
+                sleep(1/spd)
+                GPIO.output(Ap,0)
+                GPIO.output(Am,0)
+                
+            GPIO.output(self.AIN1,GPIO.LOW)
+            GPIO.output(self.AIN2,GPIO.LOW)
+            GPIO.output(self.BIN1,GPIO.LOW)
+            GPIO.output(self.BIN2,GPIO.LOW)
+                

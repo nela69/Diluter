@@ -43,12 +43,12 @@ class HoloPiAppPi:
         live_v_w = 960
         live_v_h = 720
         
-        right_pan_w= 250
+        confpan_w = 250
         confpan_h = 590
         padding = 5
         console_height = 150
         control_width = 500 
-        mainw_w = live_v_w + right_pan_w + 3 * padding
+        mainw_w = live_v_w + confpan_w + 3 * padding
         mainw_h = live_v_h + console_height + 3 * padding
         console_width = mainw_w - control_width - 3 * padding
         seqpan_h = live_v_h - confpan_h - padding
@@ -58,6 +58,27 @@ class HoloPiAppPi:
         scr_h = self.root.winfo_screenheight()
         x = int(scr_w/2 - mainw_w/2)
         y = int(scr_h/2 - mainw_h/2)
+        
+        c = 0.95 * min(scr_w/mainw_w, scr_h/mainw_h)
+        
+        if c > 1:
+            self.live_v_w = round(c * 960) - 1
+            live_v_h = round(c * 720) - 1        
+            confpan_w= round(c * 250) - 1
+            confpan_h = round(c * 590) - 1
+            padding = round(c * 5)
+            console_height = round(c * 150) - 1
+            control_width = round(c * 650) - 1
+            mainw_w = self.live_v_w + confpan_w + 3 * padding
+            mainw_h = live_v_h + console_height + 3 * padding
+            console_width = mainw_w - control_width - 3 * padding
+            seqpan_h = live_v_h - confpan_h - padding
+            x = int(scr_w/2 - mainw_w/2)
+            y = int(scr_h/2 - mainw_h/2)
+        else:
+            c = 1
+            
+        confpan_offset = round((mainw_w - self.live_v_w - confpan_w)/2) + self.live_v_w
         
         self.root.geometry(f'{mainw_w}x{mainw_h}+{x}+{y}')
 
@@ -73,9 +94,9 @@ class HoloPiAppPi:
         self.hp_console_w = tki.LabelFrame(self.root, text = "Console")
 
         self.panel1.place(x = padding, y = padding, width = live_v_w, height = live_v_h) # panel1 holding live camera fee
-        self.panel2.place(x = live_v_w + 2*padding, y = padding, width = right_pan_w, height = confpan_h) # panel2 camera config
+        self.panel2.place(x = confpan_offset, y = padding, width = confpan_w, height = confpan_h) # panel2 camera config
         self.panel3.place(x = padding, y = live_v_h + 2*padding, width = control_width, height = console_height) # panel3 control buttons
-        self.panel4.place(x = live_v_w  + 2*padding, y = confpan_h + 2*padding, width = right_pan_w, height = seqpan_h) # panel4 Sequences
+        self.panel4.place(x = confpan_offset, y = confpan_h + 2*padding, width = confpan_w, height = seqpan_h) # panel4 Sequences
         self.hp_console_w.place(x = control_width  + 2*padding, y = live_v_h + 2*padding, width = console_width, height = console_height) # panel4 Sequences
 
         # start a thread that constantly pools the video sensor for
@@ -252,24 +273,30 @@ class HoloPiAppPi:
         
         slider_p = tki.Scale(self.panel3, orient="horizontal", from_ = 0, to = 100, length = 200, command = self.setPumpSpeed)
         slider_p.set(hpg.pspeed)
-        slider_p.place(relx = 0.35, rely = 0.25)
+        slider_p.place(relx = 0.35/c, rely = 0.25)
         
         self.btn_pdir = tki.Button(self.panel3, text=" ==> ", command = self.changePumpDir)
-        self.btn_pdir.place(relx = 0.78, rely = 0.32)
+        self.btn_pdir.place(relx = 0.78/c, rely = 0.32)
  
         btn_p = tki.Button(self.panel3, text=" run stepper motor ", command = self.runStepper)
         btn_p.place(relx = 0, rely = 0.69)
         
         self.set_st_speed = tki.Scale(self.panel3, orient="horizontal", from_ = 0, to = 100, length = 200)
         self.set_st_speed.set(hpg.st_speed)
-        self.set_st_speed.place(relx = 0.35, rely = 0.6)
+        self.set_st_speed.place(relx = 0.35/c, rely = 0.6)
         
         clabel = tki.Label(self.panel3, text = "Rotation angle:")
-        clabel.place(relx = 0.78, rely = 0.6)
+        clabel.place(relx = 0.78/c, rely = 0.6)
         self.set_st_angle = tki.Spinbox(self.panel3, from_= -9999, to = 9999)
-        self.set_st_angle.place(relwidth = 0.15, relx = 0.78, rely = 0.76)
+        self.set_st_angle.place(relwidth = 0.13, relx = 0.78/c, rely = 0.76)
         self.set_st_angle.delete(0, tki.END)
         self.set_st_angle.insert(0, str(hpg.st_angle))
+        
+        steppertype = ['unipolar', 'bipolar']
+        self.st_var = tki.StringVar(self.panel3)
+        self.st_var.set(steppertype[0])
+        self.steppertype_menu = tki.OptionMenu(self.panel3, self.st_var, *steppertype)
+        self.steppertype_menu.place(relwidth = 0.15, relx=0.95/c, rely = 0.72)
         
 ########################### PANEL 4 CONTROLS ########################################
         self.om_var = tki.StringVar(self.panel4)
@@ -368,7 +395,8 @@ class HoloPiAppPi:
         hpg.st_speed = int(self.set_st_speed.get())
         hpg.st_angle = int(self.set_st_angle.get())
         hpg.hp_console.write2Console('Running stepper motor @speed:' + str(hpg.st_speed) + ' step/s angle:' + str(hpg.st_angle) + ' degree')
-        hpg.stepper.runStepper(hpg.st_speed, hpg.st_angle)
+        steppertype = self.st_var.get()
+        hpg.stepper.runStepper(hpg.st_speed, hpg.st_angle, steppertype)
         
     def eval_cropx_low_slide(self, s_cropx_low):
         hpg.cropx_low = int(s_cropx_low)
@@ -471,8 +499,8 @@ class HoloPiAppPi:
                 hpg.current_frame = hpg.vs.read()
                 self.updateBkg(hpg.current_frame)
 
-                self.frame = imutils.resize(hpg.current_frame, width=960)
-                self.current_bkg = imutils.resize(hpg.current_bkg, width=960)
+                self.frame = imutils.resize(hpg.current_frame, width=self.live_v_w)
+                self.current_bkg = imutils.resize(hpg.current_bkg, width=self.live_v_w)
 
                 # OpenCV represents images in BGR order; however PIL
                 # represents images in RGB order, so we need to swap

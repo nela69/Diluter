@@ -204,8 +204,8 @@ def init_GPIO_Config(): # initializing GPIO
     LED1 = Ga.Actuator(13) # 405nm LED
     LED2 = Ga.Actuator(24, 0, 23) # amber LED
 #    LED3 = Ga.Actuator(26)
-    stepper = Ga.UniStepper(5, 6, 25, 12)
-    # stepper = Ga.UniStepper(16,18,13,15)
+    stepper = Ga.Stepper(5, 6, 25, 12)
+#    stepper = Ga.Stepper(16,18,15,13)
     
     st_speed = 100
     st_angle = 360
