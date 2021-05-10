@@ -271,24 +271,24 @@ class HoloPiAppPi:
         btn_p = tki.Button(self.panel3, text=" start/stop pump ", command = lambda: hpg.pump.On(hpg.pumpDir))
         btn_p.place(relx = 0, rely = 0.32)
         
-        slider_p = tki.Scale(self.panel3, orient="horizontal", from_ = 0, to = 100, length = 200, command = self.setPumpSpeed)
+        slider_p = tki.Scale(self.panel3, orient="horizontal", from_ = 0, to = 100, length = 200 * c, command = self.setPumpSpeed)
         slider_p.set(hpg.pspeed)
-        slider_p.place(relx = 0.35/c, rely = 0.25)
+        slider_p.place(relx = 0.25, rely = 0.25)
         
         self.btn_pdir = tki.Button(self.panel3, text=" ==> ", command = self.changePumpDir)
-        self.btn_pdir.place(relx = 0.78/c, rely = 0.32)
+        self.btn_pdir.place(relx = 0.6, rely = 0.32)
  
         btn_p = tki.Button(self.panel3, text=" run stepper motor ", command = self.runStepper)
         btn_p.place(relx = 0, rely = 0.69)
         
-        self.set_st_speed = tki.Scale(self.panel3, orient="horizontal", from_ = 0, to = 100, length = 200)
+        self.set_st_speed = tki.Scale(self.panel3, orient="horizontal", from_ = 0, to = 100, length = 200 * c)
         self.set_st_speed.set(hpg.st_speed)
-        self.set_st_speed.place(relx = 0.35/c, rely = 0.6)
+        self.set_st_speed.place(relx = 0.25, rely = 0.6)
         
         clabel = tki.Label(self.panel3, text = "Rotation angle:")
-        clabel.place(relx = 0.78/c, rely = 0.6)
+        clabel.place(relx = 0.6, rely = 0.6)
         self.set_st_angle = tki.Spinbox(self.panel3, from_= -9999, to = 9999)
-        self.set_st_angle.place(relwidth = 0.13, relx = 0.78/c, rely = 0.76)
+        self.set_st_angle.place(relwidth = 0.13, relx = 0.6, rely = 0.76)
         self.set_st_angle.delete(0, tki.END)
         self.set_st_angle.insert(0, str(hpg.st_angle))
         
@@ -296,7 +296,7 @@ class HoloPiAppPi:
         self.st_var = tki.StringVar(self.panel3)
         self.st_var.set(steppertype[0])
         self.steppertype_menu = tki.OptionMenu(self.panel3, self.st_var, *steppertype)
-        self.steppertype_menu.place(relwidth = 0.15, relx=0.95/c, rely = 0.72)
+        self.steppertype_menu.place(relwidth = 0.15, relx=0.8, rely = 0.72)
         
 ########################### PANEL 4 CONTROLS ########################################
         self.om_var = tki.StringVar(self.panel4)

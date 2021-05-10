@@ -321,10 +321,12 @@ def readControlBatch(seq_path, command_config):
                         hp_console.write2Console(command_str)
                         exec(command_str)
                     elif command[0] == 'stepper':
-                        if len(command) != 3:
-                            hp_console.write2Console('invalid number of parameters: ' + command[0])
+                        if len(command) == 3:
+                            stepper.runStepper(int(command[1]), int(command[2]))                            
+                        elif len(command) == 4:
+                            stepper.runStepper(int(command[1]), int(command[2]), command[3])
                         else:
-                            stepper.runStepper(int(command[1]), int(command[2]))
+                            hp_console.write2Console('invalid number of parameters: ' + command[0])
                     else:
                         hp_console.write2Console('invalid command: ' + command[0])
     else:
