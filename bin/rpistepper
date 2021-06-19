@@ -1,0 +1,37 @@
+#!/home/pi/Desktop/Soluter/bin/python3
+# -*- coding: utf-8 -*-
+'''
+RPistepper shell command
+
+Copyright (C) 2015 Luiz Eduardo Amaral <luizamaral306@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+'''
+#______________________________________________________________________
+# imports
+import argparse
+from RPistepper import shell
+from RPistepper import gui
+
+#______________________________________________________________________
+# main
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='RPistepper command line interface.')
+
+    parser.add_argument('-g', '--gui', dest='run', action='store_const',
+        const=lambda: gui.GUI().mainloop(), default=lambda: shell.Shell().cmdloop(),
+        help='starts the graphical user interface')
+
+    args = parser.parse_args()
+    args.run()

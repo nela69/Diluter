@@ -72,26 +72,26 @@ class Heater:
 class Stepper:
 # 28BYJ-48 5V Stepper Motor (unipolar) and 5V bipolar driver
 # PWMA, PWMB, STBY must be set to HIGH on TB6612!!!  
-    def __init__(self, AIN1, AIN2, BIN1, BIN2):
+    def __init__(self, stGPIO_config):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        self.AIN1 = AIN1
-        self.AIN2 = AIN2
-        self.BIN1 = BIN1
-        self.BIN2 = BIN2
+        self.AIN1 = stGPIO_config[0]
+        self.AIN2 = stGPIO_config[1]
+        self.BIN1 = stGPIO_config[2]
+        self.BIN2 = stGPIO_config[3]
 
-        GPIO.setup(AIN2, GPIO.OUT)
-        GPIO.setup(AIN1, GPIO.OUT)
-        GPIO.setup(BIN1, GPIO.OUT)
-        GPIO.setup(BIN2, GPIO.OUT)
+        GPIO.setup(self.AIN2, GPIO.OUT)
+        GPIO.setup(self.AIN1, GPIO.OUT)
+        GPIO.setup(self.BIN1, GPIO.OUT)
+        GPIO.setup(self.BIN2, GPIO.OUT)
 
-        GPIO.output(AIN1,GPIO.LOW)
-        GPIO.output(AIN2,GPIO.LOW)
-        GPIO.output(BIN1,GPIO.LOW)
-        GPIO.output(BIN2,GPIO.LOW)
+        GPIO.output(self.AIN1,GPIO.LOW)
+        GPIO.output(self.AIN2,GPIO.LOW)
+        GPIO.output(self.BIN1,GPIO.LOW)
+        GPIO.output(self.BIN2,GPIO.LOW)
 
-    def runStepper(self, spd, angle, steppertype = 'unipolar'):
+    def runStepper(self, spd, steps, steppertype = 'unipolar'):
     
         if steppertype == 'unipolar':
             O = self.AIN1
@@ -101,7 +101,7 @@ class Stepper:
             
             hc = (1/spd)/2
 
-            steps = int(abs(angle)/(360/128))
+#            steps = int(abs(angle)/(360/128))
             
             if angle < 0:
                 B = self.AIN1
@@ -138,7 +138,7 @@ class Stepper:
         elif steppertype == 'bipolar':
         #    GPIO.output(STBY, GPIO.HIGH)
 
-            steps = int(abs(angle)/(360/50))
+#            steps = int(abs(angle)/(360/50))
             spd = spd * 2
 
             Ap = self.AIN1
@@ -146,13 +146,13 @@ class Stepper:
             Bp = self.BIN1
             Bm = self.BIN2
             
-            if angle <  1:
+            if steps <  0:
                 Ap = self.BIN1
                 Am = self.BIN2
                 Bp = self.AIN1
                 Bm = self.AIN2
 
-            for i in range(steps):
+            for i in range(abs(steps)):
                 GPIO.output(Ap,1)
                 GPIO.output(Am,0) 
                 sleep(1/spd)

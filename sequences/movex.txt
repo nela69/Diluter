@@ -1,0 +1,7 @@
+moveX sample
+wait 1000
+moveX diluter
+wait 1000
+moveX mixing
+wait 1000
+moveX waste
