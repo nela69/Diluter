@@ -1,4 +1,0 @@
-######## counting pixels of defined color  in an rgb image
-# countColorPixels(rgb_bgr = 'rgb', bkg_etract = 0, R_low=100,G_low=10,B_low=0,R_high=255,G_high=35,B_high=30)
-
-count_fluor_pixels rgb 1

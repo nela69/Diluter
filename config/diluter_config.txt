@@ -3,7 +3,7 @@
    'stepperZ_GPIO': [5, 6, 25, 12],
    'syringeLatch_GPIO': 4,
    'stXcurrentPos': -382,
-   'stZcurrentPos': -4,
+   'stZcurrentPos': -6,
    'stXLeftmost': -196,
    'stZLowest': -16,
    'stXRightmost': -376,

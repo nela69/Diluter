@@ -1,8 +1,0 @@
-######### Measure_stepper bipolar ##############
-
-stepper 100 90 bipolar
-wait 1000
-LED1 1
-wait 1000
-capture True 405nm
-LED1 0
