@@ -151,6 +151,8 @@ class Stepper:
                 Am = self.BIN2
                 Bp = self.AIN1
                 Bm = self.AIN2
+                
+            print(Ap,Am,Bp,Bm)
 
             for i in range(abs(steps)):
                 GPIO.output(Ap,1)

@@ -2,7 +2,7 @@
 from time import sleep
 from os import path, listdir
 import GPIO_actuators as Ga
-import console_panel as hpc
+import subprocess
 
 GPIO_config_file = './config/GPIO_config.txt'
 configfile = './config/diluter_config.txt'
@@ -12,32 +12,34 @@ sequences_path = './sequences'
 PYTHON_EDITOR = '/usr/bin/thonny'
 #editor = os.environ.get('EDITOR', PYTHON_EDITOR)
 
+##################################### CONSOLE  ########################################
+hp_console = None
 
 diluter_config = {
-                'stepperX_GPIO' : [16,18,15,13],
-                'stepperZ_GPIO' : [5,6,25,12],
-                'syringeLatch_GPIO' : 4,
+                'stepperX_GPIO': [13, 19, 6, 5],
+                'stepperZ_GPIO': [3, 2, 4, 17],
+                'syringeLatch_GPIO' : 26,
                 'stXcurrentPos' : 0,
                 'stZcurrentPos' : 0,
                 'stXLeftmost' : 0,
                 'stZLowest' : 0,
                 'stXRightmost' : 0,
                 'stZHighest' : 0,
-                'sc_pos' : 10,
-                'tc_pos' : 30,
-                'mc_pos' : 50,
-                'wc_pos' : 70,
+                'sc_pos' : 0,
+                'tc_pos' : 33,
+                'mc_pos' : 66,
+                'wc_pos' : 100,
                 'sy_ext_e' : 5,
                 'sy_ext_f' : 40,
                 'sy_rtr_e' : 40,
                 'sy_rtr_f' : 95,
                 'syr_vol' : 10,
-                'stepX' : 2,
-                'stepZ' : 2
+                'stepX' : 20,
+                'stepZ' : 20
             }
 
-stepperZ = Ga.Stepper(diluter_config['stepperX_GPIO'])
-stepperX = Ga.Stepper(diluter_config['stepperZ_GPIO'])
+stepperX = Ga.Stepper(diluter_config['stepperX_GPIO'])
+stepperZ = Ga.Stepper(diluter_config['stepperZ_GPIO'])
 steppertype = 'bipolar'
 
 syringeLatch = Ga.Actuator(diluter_config['syringeLatch_GPIO'])
@@ -53,8 +55,8 @@ def setDiluterConfig():
         return dil_config
                 
     else:
-        return None
-#        p_console.write2Console('No config file, please perform calibration first!')
+        return diluter_config
+        hp_console.write2Console('No config file, please perform calibration first!')
          
     
 
@@ -74,22 +76,24 @@ def saveDiluterConfig():
 
 ##################################### Functions  ########################################
 def runStepperX(steps):
-    stepperX.runStepper(250, steps, steppertype)
+    stepperX.runStepper(200, steps, steppertype)
     diluter_config['stXcurrentPos'] += steps
     hp_console.write2Console('Current X position: ' +  str(diluter_config['stXcurrentPos']))
     
 def runStepperZ(steps):
-    stepperZ.runStepper(250, steps, steppertype)
+    print(steps)
+    stepperZ.runStepper(300, steps, steppertype)
     diluter_config['stZcurrentPos'] += steps
     hp_console.write2Console('Current Z position: ' +  str(diluter_config['stZcurrentPos']))
     
 def moveToPos(posStr):
     if posStr[2] == 'Z' or posStr[1] == 'y':
-        runStepperX(diluter_config[posStr] - diluter_config['stZcurrentPos'])
+        print('posStr: ' + str(diluter_config[posStr]))
+        runStepperZ(int(diluter_config[posStr]) - int(diluter_config['stZcurrentPos']))
         hp_console.write2Console('Move to: ' + posStr + ' @' +  str(diluter_config[posStr]))
         diluter_config['stZcurrentPos'] = diluter_config[posStr]
     else:
-        runStepperX(diluter_config[posStr] - diluter_config['stXcurrentPos'])
+        runStepperX(int(diluter_config[posStr]) - int(diluter_config['stXcurrentPos']))
         hp_console.write2Console('Move to: ' + posStr + ' @' +  str(diluter_config[posStr]))
         diluter_config['stXcurrentPos'] = diluter_config[posStr]
         
@@ -147,7 +151,7 @@ def readControlBatch(seq_path):
             lines = inf.readlines()
             for line in lines:
                 if line[0].isalnum():
-                    command = line.split(' ')
+                    command = line[:-1].split(' ')
                     command_str = ''
                     if command[0] == 'wait':
                         wait_time = int(command[1]) / 1000
@@ -170,18 +174,23 @@ def readControlBatch(seq_path):
                     elif command[0] == 'moveZ':
                          if len(command) == 2:                             
                              if command[1] == 'syrRE':       # syringe retracted empty
+                                 syringeLatch.Off()
                                  moveToPos('sy_rtr_e')
                              elif command[1] == 'syrEE':     # syringe extended empty
+                                 syringeLatch.Off()
                                  moveToPos('sy_ext_e')
                              elif command[1] == 'syrRF':     # syringe retracted full
+                                 syringeLatch.Off()
                                  moveToPos('sy_rtr_f')
                              elif command[1] == 'syrEF':     # syringe extended full
+                                 syringeLatch.On()
                                  moveToPos('sy_ext_f')
                              else:
                                  hp_console.write2Console('invalid command: ' + command[1])
                          elif len(command) == 3:
                              if command[1] == 'syrEL':       # syringe extended load
-                                 absPos = (float(command[2]) / float(diluter_config['syr_vol'])) * (diluter_config['stZHighest'] - diluter_config['stZLowest']) + diluter_config['stZLowest'] - diluter_config['stZcurrentPos']
+                                 absPos = (float(command[2]) / float(diluter_config['syr_vol']))
+                                 * (diluter_config['stZHighest'] - diluter_config['stZLowest']) + diluter_config['stZLowest'] - diluter_config['stZcurrentPos']
                                  moveToAbsPos(absPos)
                              elif command[1] == 'syrEUL':    # syringe extended unload
                                  moveToPos('sy_ext_e')

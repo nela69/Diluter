@@ -1,10 +1,9 @@
 # import the necessary packages
 import tkinter as tki
 import dil_globals as dlg
-#import seq_control
-
+import RPi.GPIO as GPIO
 import console_panel as hpc
-
+#import seq_control
 
 
 def onClose():
@@ -66,7 +65,10 @@ containers_X.place(x = padding, y = header + calib_Z_h + padding, width = contai
 calib_S.place(x = 2 * padding + calib_Z_w, y = header, width = calib_S_w, height = calib_S_h) # syringe calibration
 calib_X.place(x = padding, y = header + calib_S_h + padding, width = calib_X_w, height = calib_X_h) # X-axis calibration
 sequences.place(x = padding, y = header + calib_S_h + calib_X_h + 2 * padding, width = sequences_w, height = sequences_h) # Sequences
+
+##################################### CONSOLE  ########################################
 hp_console_w.place(x = sequences_w  + 2*padding, y = header + calib_S_h + calib_X_h + 2 * padding, width = console_w, height = console_h) # Status console
+dlg.hp_console = hpc.hpConsole(hp_console_w)
 
 ################################# Calibration Z-axis ##########################################
 
@@ -179,6 +181,16 @@ sventry.place(relwidth = 0.15, relx = 0.7, rely = 0.75)
 sventry.delete(0, tki.END)
 sventry.insert(0, str(dlg.diluter_config['syr_vol']))
 
+
+ng = tki.Entry(calib_S)
+ng.place(relwidth = 0.1, relx = 0.55, rely = 0.88)
+ng.delete(0, tki.END)
+ng.insert(0, str(dlg.diluter_config['syringeLatch_GPIO']))
+srfmove2_btn = tki.Button(calib_S, text = "Latch", command = lambda: ToggleGPIO(int(ng.get())))
+srfmove2_btn.place(relwidth = 0.25, height = 20, relx = 0.7, rely = 0.9)
+
+
+
 #################################  Calibration X-axis ##################################
 
 ssxlabel = tki.Label(calib_X, text = "Step Size:")
@@ -223,17 +235,22 @@ sequences_menu.place(relwidth = 0.9, relx=0.05, rely = 0)
 no_of_cycles = tki.Spinbox(sequences, from_= 1, to = 99)
 no_of_cycles.place(relwidth = 0.25, relheight = 0.25, relx=0.05, rely =0.35)
 
-run_seq = tki.Button(sequences, text="Run Sequence", pady = 10, command= lambda: dlg.runSequence(om_var))
+run_seq = tki.Button(sequences, text="Run Sequence", pady = 10, command= lambda: runSequence(om_var))
 run_seq.place(relwidth = 0.6, relheight = 0.25, relx=0.35, rely =0.35)
 
 edit_seq = tki.Button(sequences, text="Edit Sequence", pady = 10, command = lambda: dlg.editSeq(om_var))
 edit_seq.place(relwidth = 0.9, relheight = 0.25, relx=0.05, rely =0.66)
 
-##################################### CONSOLE  ########################################
+##### DEBUG ########
+def ToggleGPIO(noGPIO):
+    if GPIO.input(noGPIO):
+        GPIO.output(noGPIO, GPIO.LOW)
+    else:
+        GPIO.output(noGPIO, GPIO.HIGH)
+   
+def runSequence(seq):
+    dlg.runSequence(seq)
 
-dlg.hp_console = hpc.hpConsole(hp_console_w)
-   
-   
 ####################### Main ############################
 
 root.mainloop()
